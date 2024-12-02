@@ -62,6 +62,7 @@ func (s solution) Part2(input []string) (string, error) {
 			if dampened.IsSafe() {
 			//	fmt.Printf("  %v 💹\n", dampened)
 				safe_versions += 1
+				break
 			//} else {
 			//	fmt.Printf("  %v ⚠\n", dampened)
 			}
