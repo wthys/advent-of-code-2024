@@ -193,3 +193,21 @@ func TestForEachStopping(t *testing.T) {
 		}
 	}
 }
+
+func TestExtractInts(t *testing.T) {
+	line := "1,2,+3-4++6fdsfdsfgdsg7,88,-999,19234"
+	expected := []int{1,2,3,-4,6,7,88,-999,19234}
+
+	actual := ExtractInts(line)
+	if len(actual) != len(expected) {
+		t.Fatalf("ExtractInts(%q) should have %v element, got %v", line, len(expected), len(actual))
+	}
+
+	for idx, a := range actual {
+		e := expected[idx]
+
+		if a != e {
+			t.Fatalf("ExtractInts(%q) should have %v at index %v, got %v", line, e, idx, a)
+		}
+	}
+}

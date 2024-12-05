@@ -2,6 +2,8 @@ package util
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 
 	"golang.org/x/exp/constraints"
 )
@@ -177,4 +179,18 @@ func LCM(a, b int, integers ...int) int {
 	}
 
 	return result
+}
+
+
+func ExtractInts(line string) []int {
+	reNum := regexp.MustCompile("[-+]?[0-9]+")
+	values := []int{}
+
+	nums := reNum.FindAllString(line,-1)
+	for _, num := range nums {
+		num, _ := strconv.Atoi(num)
+		values = append(values, num)
+	}
+
+	return values;
 }
