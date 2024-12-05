@@ -24,14 +24,7 @@ func (s solution) Part1(input []string) (string, error) {
 
 	total := 0
 	for _, update := range updates {
-		correct := true
-		for _, rule := range rules {
-			if !rule.Check(update) {
-				correct = false
-				break
-			}
-		}
-		if correct {
+		if checkAll(update, rules) {
 			total += update.Middle()
 		}
 	}
@@ -40,7 +33,21 @@ func (s solution) Part1(input []string) (string, error) {
 }
 
 func (s solution) Part2(input []string) (string, error) {
-	return solver.NotImplemented()
+	rules, updates, err := parseInput(input)
+	if err !=  nil {
+		return solver.Error(err)
+	}
+
+	total := 0
+	for _, update := range updates {
+		if !checkAll(update, rules) {
+			filtered := filterRules(update, rules)
+			corrected := rearrange(update, filtered)
+			total += corrected.Middle()
+		}
+	}
+
+	return solver.Solved(total)
 }
 
 type Rules []Rule
@@ -64,12 +71,26 @@ func (r Rule) Check(u Update) bool {
 		}
 	}
 
-	// fmt.Printf("DEBUG: %v : %v - %v : %v\n", r, leftIdx, rightIdx, rightIdx > leftIdx)
 	return rightIdx > leftIdx
 }
 
 func (r Rule) String() string {
 	return fmt.Sprintf("%v|%v", r.left, r.right)
+}
+
+func (r Rule) AppliesTo(u Update) bool {
+	leftFound := false
+	rightFound := false
+
+	for _, nr := range u {
+		leftFound = leftFound || r.left == nr
+		rightFound = rightFound || r.right == nr
+		if leftFound && rightFound {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (u Update) Middle() int {
@@ -103,4 +124,55 @@ func parseInput(input []string) (Rules, Updates, error) {
 	}
 
 	return rules, updates, nil
+}
+
+func rearrange(u Update, rules Rules) Update {
+	extended := extendUpdate(Update{}, u, rules)
+	return extended[0]
+}
+
+func extendUpdate(u Update, rem Update, rules Rules) Updates {
+	if len(rem) == 0 {
+		if checkAll(u, rules) {
+			return Updates{u}
+		}
+		return Updates{}
+	}
+
+	if !checkAll(u, rules) {
+		return Updates{}
+	}
+
+	x := rem[0]
+	if len(u) == 0 {
+		return extendUpdate(Update{x}, rem[1:], rules)
+	}
+
+	tests := Updates{}
+	for idx, _ := range u {
+		cand := append(append(append(Update{}, u[:idx]...), x), u[idx:]...)
+		tests = append(tests, extendUpdate(cand, rem[1:], rules)...)
+	}
+	tests = append(tests, extendUpdate(append(u, x), rem[1:], rules)...)
+
+	return tests
+}
+
+func checkAll(u Update, rules Rules) bool {
+	for _, rule := range rules {
+		if !rule.Check(u) {
+			return false
+		}
+	}
+	return true
+}
+
+func filterRules(u Update, rules Rules) Rules {
+	rs := Rules{}
+	for _, rule := range rules {
+		if rule.AppliesTo(u) {
+			rs = append(rs, rule)
+		}
+	}
+	return rs
 }

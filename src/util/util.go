@@ -78,7 +78,7 @@ func PermutationDo[T any](k int, values []T, doer func(permutation []T)) {
 		} else {
 			array[c[i]], array[i] = array[i], array[c[i]]
 		}
-		doer(array)
+		doer(append([]T(nil), array...))
 
 		c[i] += 1
 		i = 1
