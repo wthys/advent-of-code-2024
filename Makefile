@@ -13,7 +13,7 @@ ifdef ELAPSED
 ELAPSEDOPTS:=-e
 endif
 
-.PHONY: build run run-all clean example build-run run-bare example-bare all today diy-run example-today
+.PHONY: build run run-all clean example build-run run-bare example-bare all today diy-run today-example
 
 all: build
 
@@ -39,10 +39,10 @@ run-all: $(PROG)
 today: build-run $(PROG)
 	@$(PROG) input $(NOWDAY) | $(DOCKERRUN) $(NOWDAY)
 
-example-today: build-run $(PROG)
+today-example: build-run $(PROG)
 	@cat examples/day$(NOWDAY).txt | $(DOCKERRUN) $(NOWDAY)
 
-today-all: example-today today
+today-all: today-example today
 
 clean:
 	rm -f $(PROG)

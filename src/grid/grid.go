@@ -145,6 +145,12 @@ func (g *Grid[T]) Print() {
 }
 
 func (g *Grid[T]) PrintFunc(stringer func(T, error) string) {
+	g.PrintFuncWithLoc(func (_ location.Location, v T, err error) string {
+		return stringer(v, err)
+	})
+}
+
+func (g *Grid[T]) PrintFuncWithLoc(stringer func(location.Location, T, error) string) {
 	bounds, err := g.Bounds()
 
 	if err != nil {
@@ -156,7 +162,7 @@ func (g *Grid[T]) PrintFunc(stringer func(T, error) string) {
 		for x := bounds.Xmin; x <= bounds.Xmax; x++ {
 			pos := location.New(x, y)
 			val, err := g.Get(pos)
-			fmt.Print(stringer(val, err))
+			fmt.Print(stringer(pos, val, err))
 		}
 		fmt.Println()
 	}
