@@ -14,10 +14,10 @@ func (s solution) Day() string {
 	return "15"
 }
 
-func (s solution) Part1(input []string) (string, error) {
+func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 	return solver.NotImplemented()
 }
 
-func (s solution) Part2(input []string) (string, error) {
+func (s solution) Part2(input []string, opts solver.Options) (string, error) {
 	return solver.NotImplemented()
 }

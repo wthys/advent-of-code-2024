@@ -44,17 +44,31 @@ func cmdRunFlags() []cli.Flag {
         Usage: "Shows elapsed time metric",
         Required: false,
         HasBeenSet: false,
+        EnvVars: []string{"ELAPSED"},
     }
 
-    flags = append(flags, &elapsed)
+    debug := cli.BoolFlag{
+        Name: "debug",
+        Aliases: []string{"d"},
+        Usage: "Shows debug output",
+        Required: false,
+        HasBeenSet: false,
+        EnvVars: []string{"DEBUG"},
+    }
+
+    flags = append(flags, &elapsed, &debug)
 
     return flags
 }
 
 func cmdRun(ctx context.Context) cli.ActionFunc {
     return func (c *cli.Context) error {
-        if c.Bool("elapsed") || c.Bool("e") {
+        if c.Bool("elapsed") {
             ctx = context.WithValue(ctx, "elapsed", true)
+        }
+
+        if c.Bool("debug") {
+            ctx = context.WithValue(ctx, "debug", true)
         }
 
         s, err := solver.GetSolver(c.Args().First())

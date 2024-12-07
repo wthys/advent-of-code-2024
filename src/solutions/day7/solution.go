@@ -17,7 +17,7 @@ func (s solution) Day() string {
 	return "7"
 }
 
-func (s solution) Part1(input []string) (string, error) {
+func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 	calibrations, err := parseInput(input)
 	if err != nil {
 		return solver.Error(err)
@@ -44,7 +44,7 @@ func (s solution) Part1(input []string) (string, error) {
 	return solver.Solved(total)
 }
 
-func (s solution) Part2(input []string) (string, error) {
+func (s solution) Part2(input []string, opts solver.Options) (string, error) {
 	calibrations, err := parseInput(input)
 	if err != nil {
 		return solver.Error(err)

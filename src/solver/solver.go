@@ -35,10 +35,29 @@ func Error(err error) (string, error) {
 
 type Day int
 
+type Options struct {
+    debug bool
+}
+
+func (opts Options) Debugf(format string, values ...any) {
+    if opts.debug {
+        fmt.Printf(format, values...)
+    }
+}
+
+func (opts Options) IfDebugDo(printer func(opts Options)) {
+    if opts.debug {
+        printer(opts)
+    }
+}
+
+func (opts Options) IsDebug() bool {
+    return opts.debug
+}
 
 type Solver interface{
-    Part1(input []string) (string, error)
-    Part2(input []string) (string, error)
+    Part1(input []string, opts Options) (string, error)
+    Part2(input []string, opts Options) (string, error)
     Day() string
 }
 
@@ -103,12 +122,15 @@ func (r *Result) AddAnswers(s Solver, input []string, ctx context.Context) error
 
     durations := []time.Duration{}
 
+    debug, dok := ctx.Value("debug").(bool)
+    opts := Options{dok && debug}
+
     var start time.Time
 
     if (elapsed) {
         start = time.Now()
     }
-    part1, err := s.Part1(input)
+    part1, err := s.Part1(input, opts)
     if (elapsed) {
         durations = append(durations, time.Since(start))
     }
@@ -119,7 +141,7 @@ func (r *Result) AddAnswers(s Solver, input []string, ctx context.Context) error
     if (elapsed) {
         start = time.Now()
     }
-    part2, err := s.Part2(input)
+    part2, err := s.Part2(input, opts)
     if (elapsed) {
         durations = append(durations, time.Since(start))
     }
