@@ -27,6 +27,10 @@ func (s solution) Part1(input []string) (string, error) {
 	for _, calibration := range calibrations {
 		valid := 0
 		util.CombinationDo([]string{"+","*"}, len(calibration.nums)-1, func(cand []string) {
+			if valid > 0 {
+				return
+			}
+			
 			if calibration.value == evaluate(cand, calibration.nums) {
 				valid += 1
 			}
@@ -51,6 +55,10 @@ func (s solution) Part2(input []string) (string, error) {
 	for _, calibration := range calibrations {
 		valid := 0
 		util.CombinationDo([]string{"+","*","|"}, len(calibration.nums)-1, func(cand []string) {
+			if valid > 0 {
+				return
+			}
+
 			if calibration.value == evaluate(cand, calibration.nums) {
 				valid += 1
 			}
