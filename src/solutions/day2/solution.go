@@ -2,8 +2,6 @@ package day2
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
 	"github.com/wthys/advent-of-code-2024/solver"
 	"github.com/wthys/advent-of-code-2024/util"
 )
@@ -25,7 +23,6 @@ func (s solution) Part1(input []string) (string, error) {
 	if err != nil {
 		return solver.Error(err)
 	}
-	//fmt.Printf("%v\n", reports)
 
 	count := 0
 	for _, report := range reports {
@@ -45,26 +42,25 @@ func (s solution) Part2(input []string) (string, error) {
 
 	count := 0
 	for _, report := range reports {
-		//fmt.Printf("CHECKING %v FOR DAMPENING\n", report)
 		if report.IsSafe() {
 			count += 1
 			continue
 		}
+
 		safe_versions := 0
 		for idx, _ := range report {
 			dampened := Report{}
 			if len(report[:idx]) > 0 {
 				dampened = append(dampened, report[:idx]...)
 			}
+
 			if len(report[idx+1:]) > 0 {
 				dampened = append(dampened, report[idx+1:]...)
 			}
+
 			if dampened.IsSafe() {
-			//	fmt.Printf("  %v 💹\n", dampened)
 				safe_versions += 1
 				break
-			//} else {
-			//	fmt.Printf("  %v ⚠\n", dampened)
 			}
 		}
 
@@ -78,19 +74,13 @@ func (s solution) Part2(input []string) (string, error) {
 func parseInput(input []string) ([]Report, error) {
 	reports := []Report{}
 
-	num := regexp.MustCompile("[0-9]+")
-
 	for _, line := range input {
-		nums := num.FindAllString(line, -1)
+		nums := util.ExtractInts(line)
 		if len(nums) == 0 {
 			continue
 		}
-		report := Report{}
-		for _, cand := range nums {
-			n, _ := strconv.Atoi(cand)
-			report = append(report, n)
-		}
-		reports = append(reports, report)
+
+		reports = append(reports, Report(nums))
 	}
 
 	if len(reports) == 0 {
@@ -115,7 +105,6 @@ func (r Report) IsSafe() bool {
 func isSafePair(a, b int, direction int) (bool, int) {
 	diff := util.Abs(b-a)
 	if diff < 1 || diff > 3 {
-		//fmt.Printf("%v,%v has wrong difference\n", a, b)
 		return false, direction
 	}
 
@@ -125,7 +114,6 @@ func isSafePair(a, b int, direction int) (bool, int) {
 	}
 
 	if direction != dir {
-		//fmt.Printf("%v,%v has wrong direction\n", a, b)
 		return false, dir
 	}
 

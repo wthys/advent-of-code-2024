@@ -37,7 +37,6 @@ func (s solution) Part1(input []string) (string, error) {
 		})
 
 		if valid > 0 {
-			// fmt.Printf("%v has %v valid interpretations!\n", calibration, valid)
 			total += calibration.value
 		}
 	}
@@ -65,7 +64,6 @@ func (s solution) Part2(input []string) (string, error) {
 		})
 
 		if valid > 0 {
-			// fmt.Printf("%v has %v valid interpretations!\n", calibration, valid)
 			total += calibration.value
 		}
 	}
@@ -81,7 +79,6 @@ type Calibration struct {
 }
 
 func operate(oper string, left int, right int) int {
-	// fmt.Printf("______ %v %v %v\n", left, oper, right)
 	if oper == "+" {
 		return left + right
 	}

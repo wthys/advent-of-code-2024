@@ -2,9 +2,9 @@ package day3
 
 import (
 	"fmt"
-	"strconv"
 	"regexp"
 	"github.com/wthys/advent-of-code-2024/solver"
+	"github.com/wthys/advent-of-code-2024/util"
 )
 
 type solution struct{}
@@ -94,17 +94,14 @@ func parseInput(input []string) (Instructions, error) {
 	instructions := Instructions{}
 
 	reInstr := regexp.MustCompile("(mul|do|don't)[(]([-+]?[0-9]+,[-+]?[0-9]+)?[)]")
-	reArgs := regexp.MustCompile("[-+]?[0-9]+")
 
 	for _, line := range input {
 		matches := reInstr.FindAllStringSubmatch(line, -1)
 		for _, match := range matches {
 			oper := match[1]
 			if oper == "mul" {
-				args := reArgs.FindAllString(match[2], 2)
-				left, _ := strconv.Atoi(args[0])
-				right, _ := strconv.Atoi(args[1])
-				instructions = append(instructions, Instruction{oper, left, right})
+				args := util.ExtractInts(match[2])
+				instructions = append(instructions, Instruction{oper, args[0], args[1]})
 			} else {
 				instructions = append(instructions, Instruction{oper, 0, 0})
 			}

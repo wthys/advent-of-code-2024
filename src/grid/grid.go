@@ -3,27 +3,27 @@ package grid
 import (
 	"fmt"
 
-	"github.com/wthys/advent-of-code-2024/location"
+	L "github.com/wthys/advent-of-code-2024/location"
 )
 
 type (
 	Grid[T any] struct {
 		defaultFunc DefaultFunction[T]
-		data        map[location.Location]T
+		data        map[L.Location]T
 	}
 
 	Bounds struct {
 		Xmin, Xmax, Ymin, Ymax int
 	}
 
-	DefaultFunction[T any] func(loc location.Location) (T, error)
-	ForEachFunction[T any] func(loc location.Location, value T)
+	DefaultFunction[T any] func(loc L.Location) (T, error)
+	ForEachFunction[T any] func(loc L.Location, value T)
 )
 
 // `DefaultValue` creates a `DefaultFunction` that always returns the provided
 // value.
 func DefaultValue[T any](value T) DefaultFunction[T] {
-	return func(_ location.Location) (T, error) {
+	return func(_ L.Location) (T, error) {
 		return value, nil
 	}
 }
@@ -36,7 +36,7 @@ func DefaultZero[T any]() DefaultFunction[T] {
 // `DefaultError` creates a `DefaultFunction` that always returns an error "no
 // value at <loc>"
 func DefaultError[T any]() DefaultFunction[T] {
-	return func(loc location.Location) (T, error) {
+	return func(loc L.Location) (T, error) {
 		return *new(T), fmt.Errorf("no value at %v", loc)
 	}
 }
@@ -56,13 +56,13 @@ func WithDefault[T any](value T) *Grid[T] {
 // `WithDefaultFunc` creates a `Grid` using the provided `DefaultFunction` for
 // unknown `Location`s.
 func WithDefaultFunc[T any](defaultFunc DefaultFunction[T]) *Grid[T] {
-	return &Grid[T]{defaultFunc, map[location.Location]T{}}
+	return &Grid[T]{defaultFunc, map[L.Location]T{}}
 }
 
 // `Get` retrieves the value stored at `loc`. If there is no value stored, the
 // `Grid`'s `DefaultFunction` is called. If no `DefaultFunction` was set,
 // `DefaultError[T]()` is used.
-func (g *Grid[T]) Get(loc location.Location) (T, error) {
+func (g *Grid[T]) Get(loc L.Location) (T, error) {
 	val, ok := g.data[loc]
 	if ok {
 		return val, nil
@@ -75,12 +75,12 @@ func (g *Grid[T]) Get(loc location.Location) (T, error) {
 }
 
 // `Set` stores a value at `loc`.
-func (g *Grid[T]) Set(loc location.Location, value T) {
+func (g *Grid[T]) Set(loc L.Location, value T) {
 	g.data[loc] = value
 }
 
 // `Remove` removes the stored value at `loc`, if any.
-func (g *Grid[T]) Remove(loc location.Location) {
+func (g *Grid[T]) Remove(loc L.Location) {
 	delete(g.data, loc)
 }
 
@@ -101,7 +101,7 @@ func (g *Grid[T]) Bounds() (Bounds, error) {
 
 	bounds := Bounds{0, 0, 0, 0}
 	found := false
-	apply := func(loc location.Location, _ T) {
+	apply := func(loc L.Location, _ T) {
 		if !found {
 			bounds.Xmin = loc.X
 			bounds.Xmax = loc.X
@@ -145,12 +145,12 @@ func (g *Grid[T]) Print() {
 }
 
 func (g *Grid[T]) PrintFunc(stringer func(T, error) string) {
-	g.PrintFuncWithLoc(func (_ location.Location, v T, err error) string {
+	g.PrintFuncWithLoc(func (_ L.Location, v T, err error) string {
 		return stringer(v, err)
 	})
 }
 
-func (g *Grid[T]) PrintFuncWithLoc(stringer func(location.Location, T, error) string) {
+func (g *Grid[T]) PrintFuncWithLoc(stringer func(L.Location, T, error) string) {
 	bounds, err := g.Bounds()
 
 	if err != nil {
@@ -160,7 +160,7 @@ func (g *Grid[T]) PrintFuncWithLoc(stringer func(location.Location, T, error) st
 
 	for y := bounds.Ymin; y <= bounds.Ymax; y++ {
 		for x := bounds.Xmin; x <= bounds.Xmax; x++ {
-			pos := location.New(x, y)
+			pos := L.New(x, y)
 			val, err := g.Get(pos)
 			fmt.Print(stringer(pos, val, err))
 		}
@@ -168,7 +168,7 @@ func (g *Grid[T]) PrintFuncWithLoc(stringer func(location.Location, T, error) st
 	}
 }
 
-func (b *Bounds) Has(loc location.Location) bool {
+func (b *Bounds) Has(loc L.Location) bool {
 	return loc.X >= b.Xmin && loc.X <= b.Xmax && loc.Y >= b.Ymin && loc.Y <= b.Ymax
 }
 
@@ -180,7 +180,7 @@ func (b Bounds) Height() int {
 	return b.Ymax - b.Ymin + 1
 }
 
-func (b Bounds) Accomodate(loc location.Location) Bounds {
+func (b Bounds) Accomodate(loc L.Location) Bounds {
 	newb := b
 	newb.Xmin = min(b.Xmin, loc.X)
 	newb.Xmax = max(b.Xmax, loc.X)
@@ -189,7 +189,7 @@ func (b Bounds) Accomodate(loc location.Location) Bounds {
 	return newb
 }
 
-func BoundsFromLocation(loc location.Location) Bounds {
+func BoundsFromLocation(loc L.Location) Bounds {
 	b := Bounds{}
 	b.Xmin = loc.X
 	b.Xmax = loc.X
@@ -198,7 +198,7 @@ func BoundsFromLocation(loc location.Location) Bounds {
 	return b
 }
 
-func BoundsFromSlice(locations []location.Location) Bounds {
+func BoundsFromSlice(locations L.Locations) Bounds {
 	if len(locations) == 0 {
 		return Bounds{}
 	}
@@ -209,10 +209,10 @@ func BoundsFromSlice(locations []location.Location) Bounds {
 	return b
 }
 
-func (b Bounds) ForEach(forEach func(loc location.Location)) {
+func (b Bounds) ForEach(forEach func(loc L.Location)) {
 	for y := b.Ymin; y <= b.Ymax; y++ {
 		for x := b.Xmin; x <= b.Xmax; x++ {
-			loc := location.New(x, y)
+			loc := L.New(x, y)
 			forEach(loc)
 		}
 	}

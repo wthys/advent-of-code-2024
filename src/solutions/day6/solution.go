@@ -24,7 +24,7 @@ func (s solution) Part1(input []string) (string, error) {
 		return solver.Error(err)
 	}
 
-	guards, _ := simulateGuard(guard, grid, []L.Location{})
+	guards, _ := simulateGuard(guard, grid, L.Locations{})
 
 	return solver.Solved(guards.PositionSet().Len())
 }
@@ -35,7 +35,7 @@ func (s solution) Part2(input []string) (string, error) {
 		return solver.Error(err)
 	}
 
-	guards, _ := simulateGuard(guard, grid, []L.Location{})
+	guards, _ := simulateGuard(guard, grid, L.Locations{})
 
 	candidates := S.New[L.Location]()
 	for _, g := range guards {
@@ -43,22 +43,16 @@ func (s solution) Part2(input []string) (string, error) {
 			continue
 		}
 
-		_, looped := simulateGuard(guard, grid, []L.Location{g.pos})
+		_, looped := simulateGuard(guard, grid, L.Locations{g.pos})
 		if looped {
 			candidates.Add(g.pos)
 		}
 	}
-	
-	// visualiseRegions(grid, RegionMap{
-	// 	{"G", S.New(guard.pos)},
-	// 	{"O", candidates},
-	// 	{"+", guards.PositionSet()},
-	// })
 
 	return solver.Solved(candidates.Len())
 }
 
-func simulateGuard(guard Guard, grid *G.Grid[string], obstacles []L.Location) (Guards, bool) {
+func simulateGuard(guard Guard, grid *G.Grid[string], obstacles L.Locations) (Guards, bool) {
 	gg := G.New[string]()
 	grid.ForEach(func (loc L.Location, v string) {
 		gg.Set(loc, v)
@@ -115,8 +109,8 @@ func (guards Guards) PositionSet() *S.Set[L.Location] {
 	return S.New(guards.Positions()...)
 }
 
-func (guards Guards) Positions() []L.Location {
-	locs := []L.Location{}
+func (guards Guards) Positions() L.Locations {
+	locs := L.Locations{}
 	for _, g := range guards {
 		locs = append(locs, g.pos)
 	}

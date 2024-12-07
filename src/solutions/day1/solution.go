@@ -2,8 +2,6 @@ package day1
 
 import (
 	"fmt"
-	"regexp"
-	"strconv"
 	"slices"
 	"github.com/wthys/advent-of-code-2024/solver"
 	"github.com/wthys/advent-of-code-2024/util"
@@ -72,21 +70,17 @@ func (s solution) Part2(input []string) (string, error) {
 }
 
 func parseInput(input []string) (*Notes, error) {
-	num := regexp.MustCompile("[0-9]+")
 	notes := &Notes{[]int{},[]int{}}
 	for _, line := range input {
-		nums := num.FindAllString(line, 2)
+		nums := util.ExtractInts(line)
 		if len(nums) == 0 {
 			continue
 		}
 		if len(nums) < 2 {
 			return nil, fmt.Errorf("not enough numbers")
 		}
-
-		l, _ := strconv.Atoi(nums[0])
-		r, _ := strconv.Atoi(nums[1])
-		notes.left = append(notes.left, l)
-		notes.right = append(notes.right, r)
+		notes.left = append(notes.left, nums[0])
+		notes.right = append(notes.right, nums[1])
 	}
 
 	return notes, nil

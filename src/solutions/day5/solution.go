@@ -94,7 +94,7 @@ func (r Rule) AppliesTo(u Update) bool {
 }
 
 func (u Update) Middle() int {
-	return u[len(u)/2]
+	return u[len(u) / 2]
 }
 
 func parseInput(input []string) (Rules, Updates, error) {
@@ -116,7 +116,7 @@ func parseInput(input []string) (Rules, Updates, error) {
 			}
 			rules = append(rules, Rule{values[0], values[1]})
 		} else {
-			if len(values)%2 != 1 {
+			if len(values) % 2 != 1 {
 				return nil, nil, fmt.Errorf("#%v : not an odd number of updates : %v", no+1, line)
 			}
 			updates = append(updates, Update(values))

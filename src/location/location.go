@@ -84,6 +84,9 @@ type (
 	Location3 struct {
 		X, Y, Z int
 	}
+
+	Locations []Location
+	Locations3 []Location3
 )
 
 func (l Location) String() string {
@@ -134,7 +137,7 @@ func (l Location3) Manhattan() int {
 	return util.Abs(l.X) + util.Abs(l.Y) + util.Abs(l.Z)
 }
 
-func (l Location) Neejbers() []Location {
+func (l Location) Neejbers() Locations {
 	xl := l.X - 1
 	xm := l.X
 	xr := l.X + 1
@@ -148,7 +151,7 @@ func (l Location) Neejbers() []Location {
 	}
 }
 
-func (l Location) OrthoNeejbers() []Location {
+func (l Location) OrthoNeejbers() Locations {
 	xl := l.X - 1
 	xm := l.X
 	xr := l.X + 1

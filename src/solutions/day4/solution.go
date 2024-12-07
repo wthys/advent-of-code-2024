@@ -24,7 +24,7 @@ func (s solution) Part1(input []string) (string, error) {
 	}
 
 	count := 0
-	directions := []L.Location{ {0,1}, {1,1}, {1,0}, {1,-1}, {-1,0}, {-1,-1}, {0,-1}, {-1,1} }
+	directions := L.Locations{ {0,1}, {1,1}, {1,0}, {1,-1}, {-1,0}, {-1,-1}, {0,-1}, {-1,1} }
 	grid.ForEach(func (loc L.Location, letter rune) {
 		if letter != 'X' {
 			return
@@ -40,15 +40,16 @@ func (s solution) Part1(input []string) (string, error) {
 	return solver.Solved(count)
 }
 
-func (s solution) Part2(input []string) (string, error) {grid, err := parseInput(input)
+func (s solution) Part2(input []string) (string, error) {
+	grid, err := parseInput(input)
 	if err != nil {
 		return solver.Error(err)
 	}
 
 	count := 0
 
-	forwardDirs := []L.Location{{1,1},{-1,-1}}
-	backDirs := []L.Location{{-1,1},{1,-1}}
+	forwardDirs := L.Locations{{1,1},{-1,-1}}
+	backDirs := L.Locations{{-1,1},{1,-1}}
 	grid.ForEach(func (start L.Location, letter rune) {
 		if letter != 'A' {
 			return
