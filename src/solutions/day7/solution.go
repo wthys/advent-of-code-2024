@@ -2,6 +2,7 @@ package day7
 
 import (
 	"fmt"
+	"strconv"
 	"github.com/wthys/advent-of-code-2024/solver"
 	"github.com/wthys/advent-of-code-2024/util"
 )
@@ -25,16 +26,14 @@ func (s solution) Part1(input []string) (string, error) {
 	total := 0
 	for _, calibration := range calibrations {
 		valid := 0
-		max := 1 << (len(calibration.nums)-1)
-		operators := 0
-		for operators < max {
-			if calibration.value == evaluate(operators, calibration.nums) {
+		util.CombinationDo([]string{"+","*"}, len(calibration.nums)-1, func(cand []string) {
+			if calibration.value == evaluate(cand, calibration.nums) {
 				valid += 1
 			}
-			operators += 1
-		}
+		})
+
 		if valid > 0 {
-			fmt.Printf("%v has %v valid interpretations!\n", calibration, valid)
+			// fmt.Printf("%v has %v valid interpretations!\n", calibration, valid)
 			total += calibration.value
 		}
 	}
@@ -43,7 +42,27 @@ func (s solution) Part1(input []string) (string, error) {
 }
 
 func (s solution) Part2(input []string) (string, error) {
-	return solver.NotImplemented()
+	calibrations, err := parseInput(input)
+	if err != nil {
+		return solver.Error(err)
+	}
+
+	total := 0
+	for _, calibration := range calibrations {
+		valid := 0
+		util.CombinationDo([]string{"+","*","|"}, len(calibration.nums)-1, func(cand []string) {
+			if calibration.value == evaluate(cand, calibration.nums) {
+				valid += 1
+			}
+		})
+
+		if valid > 0 {
+			// fmt.Printf("%v has %v valid interpretations!\n", calibration, valid)
+			total += calibration.value
+		}
+	}
+
+	return solver.Solved(total)
 }
 
 type Calibrations []Calibration
@@ -53,47 +72,25 @@ type Calibration struct {
 	nums []int
 }
 
-func getOperators(operators int, n int) []string {
-	opers := []string{}
-	n -= 1
-	for n >= 0 {
-		opers = append(opers, getOperator(operators, n))
-		n -= 1
-	}
-	return opers
-}
-
-func getOperator(operators int, idx int) string {
-	opermap := map[bool]string{
-		false: "+",
-		true: "*",
-	}
-	return opermap[(operators & (1<<idx)) > 0]
-}
-
 func operate(oper string, left int, right int) int {
 	// fmt.Printf("______ %v %v %v\n", left, oper, right)
 	if oper == "+" {
 		return left + right
 	}
 
+	if oper == "|" {
+		n, _ := strconv.Atoi(fmt.Sprintf("%v%v", left, right))
+		return n
+	}
+
 	return left * right
 }
 
-func evaluate(operators int, nums []int) int {
-	// fmt.Printf("evaluate(%v, %v) = ", getOperators(operators, len(nums)-1), nums)
-	opers := len(nums)-2
-	idx := 1
+func evaluate(operators []string, nums []int) int {
 	total := nums[0]
-	for true {
-		total = operate(getOperator(operators, opers), total, nums[idx])
-		opers -= 1
-		idx += 1
-		if opers < 0 {
-			break
-		}
+	for idx, oper := range operators {
+		total = operate(oper, total, nums[idx+1])
 	}
-	// fmt.Println(total)
 	return total
 }
 

@@ -85,6 +85,19 @@ func PermutationDo[T any](k int, values []T, doer func(permutation []T)) {
 	}
 }
 
+func CombinationDo[T any](values []T, k int, doer func([]T)) {
+	if k == 0 {
+		doer([]T{})
+		return;
+	}
+	
+	for _, v := range values {
+		CombinationDo(values, k-1, func(km1 []T) {
+			doer(append([]T{v}, km1...))
+		})
+	}
+}
+
 func PairWiseDo[T any](values []T, doer func(a, b T)) {
 	if len(values) < 2 {
 		return

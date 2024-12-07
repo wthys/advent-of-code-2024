@@ -211,3 +211,44 @@ func TestExtractInts(t *testing.T) {
 		}
 	}
 }
+
+type testComb struct {
+	vals []int
+	k int
+	expected [][]int
+}
+
+func combCase(vals []int, k int, expected[][]int) testComb {
+	return testComb{
+		vals,
+		k,
+		expected,
+	}
+}
+
+func TestCombinationDo(t * testing.T) {
+	cases := []testComb{
+		combCase([]int{1,2}, 1, [][]int{{1},{2}}),
+		combCase([]int{3,4}, 2, [][]int{{3,3},{3,4},{4,3},{4,4}}),
+		combCase([]int{5,6}, 3, [][]int{{5,5,5}, {5,5,6}, {5,6,5}, {5,6,6}, {6,5,5}, {6,5,6}, {6,6,5}, {6,6,6}}),
+		combCase([]int{7,8,9}, 2, [][]int{{7,7}, {7,8}, {7,9}, {8,7}, {8,8}, {8,9}, {9,7}, {9,8}, {9,9}}),
+	}
+
+	for _, cs := range cases {
+		seen := map[int]int{}
+		for _, val := range cs.expected {
+			seen[hash(val)] = 0
+		}
+
+		CombinationDo(cs.vals, cs.k, func (cand []int) {
+			seen[hash(cand)] += 1
+		})
+
+		for _, vals := range cs.expected {
+			n, _ := seen[hash(vals)]
+			if n != 1 {
+				t.Fatalf("%v was seen %v times, expected 1", vals, n)
+			}
+		}
+	}
+}
