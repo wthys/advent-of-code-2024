@@ -252,3 +252,64 @@ func TestCombinationDo(t * testing.T) {
 		}
 	}
 }
+
+type caseStoI struct {
+	input []string
+	expected []int
+	err bool
+}
+
+func TestStringsToInts(t *testing.T) {
+	cases := []caseStoI{
+		{[]string{"1","2","3"}, []int{1,2,3}, false},
+		{[]string{"1","2","a"}, nil, true},
+		{[]string{"-11","+22","33"}, []int{-11,22,33}, false},
+		{[]string{}, []int{}, false},
+	}
+
+	for _, cs := range cases {
+		actual, err := StringsToInts(cs.input)
+		if cs.err && err == nil {
+			t.Fatalf("StringsToInts(%v) expected an error, got none", cs.input)
+		}
+
+		if len(cs.expected) != len(actual) {
+			t.Fatalf("StringsToInts(%v) expected to have %v elements, got %v", cs.input, len(cs.expected), len(actual))
+		}
+
+		for idx, e := range cs.expected {
+			if e != actual[idx] {
+				t.Fatalf("StringsToInts(%v) expected %v @ %v, got %v", cs.input, e, idx, actual[idx])
+			}
+		}
+	}
+}
+
+type caseExRgx struct {
+	pattern string
+	line string
+	expected []string
+}
+
+func TestExtractRegex(t *testing.T) {
+	cases := []caseExRgx{
+		{"ab", "abaaabbabbaba", []string{"ab", "ab", "ab", "ab"}},
+		{"[0-9]", "1jh2ki54jhh9", []string{"1", "2", "5", "4", "9"}},
+		{"hello", "world", []string{}},
+		{"[-+]?[0-9]+", "123,+45adf67,-8,9", []string{"123", "+45", "67", "-8", "9"}},
+	}
+
+	for _, cs := range cases {
+		actual := ExtractRegex(cs.pattern, cs.line)
+		if len(actual) != len(cs.expected) {
+			t.Fatalf("ExtractRegex(%q, %q) expected %v elements, got %v", cs.pattern, cs.line, len(cs.expected), len(actual))
+		}
+
+		for idx, e := range cs.expected {
+			a := actual[idx]
+			if e != a {
+				t.Fatalf("ExtractRegex(%q, %q) expected %v @ %v, got %v", cs.pattern, cs.line, e, idx, a)
+			}
+		}
+	}
+}
