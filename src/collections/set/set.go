@@ -48,6 +48,13 @@ func (s *Set[T]) Add(value T) *Set[T] {
 	return s
 }
 
+func (s *Set[T]) AddAll(values []T) *Set[T] {
+	for _, value := range values {
+		s.Add(value)
+	}
+	return s
+}
+
 func (s Set[T]) Has(value T) bool {
 	_, ok := s.contents[value]
 	return ok

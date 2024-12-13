@@ -158,6 +158,10 @@ func (g *Grid[T]) PrintFuncWithLoc(stringer func(L.Location, T, error) string) {
 		return
 	}
 
+	g.PrintBoundsFuncWithLoc(bounds, stringer)
+}
+
+func (g *Grid[T]) PrintBoundsFuncWithLoc(bounds Bounds, stringer func(L.Location, T, error) string) {
 	for y := bounds.Ymin; y <= bounds.Ymax; y++ {
 		for x := bounds.Xmin; x <= bounds.Xmax; x++ {
 			pos := L.New(x, y)
