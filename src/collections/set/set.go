@@ -17,12 +17,18 @@ type (
 	MapFunction[T comparable, R comparable] func(value T) R
 )
 
+/// Creates a new Set containing the provided values
 func New[T comparable](values ...T) *Set[T] {
 	set := Set[T]{map[T]empty{}}
 	for _, value := range values {
 		set.Add(value)
 	}
 	return &set
+}
+
+/// Creates an empty Set to contain elements like the argument
+func NewFor[T comparable](_ T) *Set[T] {
+	return &Set[T]{map[T]empty{}}
 }
 
 func (s Set[T]) String() string {

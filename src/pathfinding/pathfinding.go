@@ -9,10 +9,12 @@ import (
 type (
 	DistMap[T comparable] map[T]int
 	PrevMap[T comparable] map[T]*T
+	FromMap[T comparable] map[T]*set.Set[T]
 
 	Dijkstra[T comparable] interface {
 		ShortestPathTo(end T) []T
 		ShortestPathLengthTo(end T) int
+		ShortestPathToFunc(end T, complete PathConsumer[T])
 		ForEachNode(doer func(node T) bool)
 	}
 
@@ -20,11 +22,13 @@ type (
 		Start T
 		dist  DistMap[T]
 		prev  PrevMap[T]
+		from  FromMap[T]
 	}
 
 	BreadthFirst[T comparable] interface {
 		AllPathsTo(end T) [][]T
 		AllPathsFunc(end T, complete PathConsumer[T])
+		AllPathsFuncVisited(end T, complete PathConsumer[T], visited VisitedFunc[T])
 	}
 
 	SimpleBFS[T comparable] struct {
@@ -36,15 +40,21 @@ type (
 	NeejberFunc[T comparable]    func(node T) []T
 	ExitFunc[T comparable]       func(node T) bool
 	EdgeWeightFunc[T comparable] func(in T, out T) int
+	VisitedFunc[T comparable]    func(path []T, node T) bool
 )
 
 const (
 	INFINITE = int((^uint(0)) >> 1)
 )
 
+func NeverVisited[T comparable](_ []T, _ T) bool {
+	return false
+}
+
 func ControlledDijkstra[T comparable](start T, neejbers NeejberFunc[T], exitters ...ExitFunc[T]) Dijkstra[T] {
 	dist := DistMap[T]{}
 	prev := PrevMap[T]{}
+	from := FromMap[T]{}
 	visited := set.New[T]()
 
 	prev[start] = nil
@@ -78,18 +88,22 @@ func ControlledDijkstra[T comparable](start T, neejbers NeejberFunc[T], exitters
 			ndist, ok := dist[neejber]
 			if !ok || alt < ndist {
 				dist[neejber] = alt
+				from[node] = set.New(node)
 				prev[neejber] = &node
+			} else if alt <= ndist {
+				from[neejber].Add(node)
 			}
 		}
 	}
 
-	return SimpleDijkstra[T]{start, dist, prev}
+	return SimpleDijkstra[T]{start, dist, prev, from}
 
 }
 
 func ConstructWeightedDijkstra[T comparable](start T, neejbers NeejberFunc[T], weigh EdgeWeightFunc[T]) Dijkstra[T] {
 	dist := DistMap[T]{}
 	prev := PrevMap[T]{}
+	from := FromMap[T]{}
 	visited := set.New[T]()
 
 	prev[start] = nil
@@ -113,17 +127,25 @@ func ConstructWeightedDijkstra[T comparable](start T, neejbers NeejberFunc[T], w
 			ndist, ok := dist[neejber]
 			if !ok || alt < ndist {
 				dist[neejber] = alt
+				from[neejber] = set.New(node)
 				prev[neejber] = &node
+			} else if alt <= ndist {
+				from[neejber].Add(node)
 			}
 		}
 	}
 
-	return SimpleDijkstra[T]{start, dist, prev}
+	return SimpleDijkstra[T]{start, dist, prev, from}
+}
+
+func WeightConstant[T comparable](value int) EdgeWeightFunc[T] {
+	return func (_, _ T) int {
+		return value
+	}
 }
 
 func ConstructDijkstra[T comparable](start T, neejbers NeejberFunc[T]) Dijkstra[T] {
-	constantWeight := func(_, _ T) int { return 1 }
-	return ConstructWeightedDijkstra(start, neejbers, constantWeight)
+	return ConstructWeightedDijkstra(start, neejbers, WeightConstant[T](1))
 }
 
 func (d SimpleDijkstra[T]) ShortestPathTo(end T) []T {
@@ -159,6 +181,23 @@ func (d SimpleDijkstra[T]) ShortestPathLengthTo(end T) int {
 		return INFINITE
 	}
 	return dist
+}
+
+func (d SimpleDijkstra[T]) ShortestPathToFunc(end T, complete PathConsumer[T]) {
+	from, ok := d.from[end]
+	if !ok {
+		return
+	}
+
+	from.ForEach(func(prev T) {
+		if prev == d.Start {
+			complete([]T{prev, end})
+		} else {
+			d.ShortestPathToFunc(prev, func(path []T) {
+				complete(append(path, end))
+			})
+		}
+	})
 }
 
 func ShortestPath[T comparable](start, end T, neejbers NeejberFunc[T]) ([]T, error) {
@@ -207,10 +246,14 @@ func (bfs SimpleBFS[T]) AllPathsTo(end T) [][]T {
 }
 
 func (bfs SimpleBFS[T]) AllPathsFunc(end T, complete PathConsumer[T]) {
-	bfs.seek([]T{bfs.Start}, end, complete)
+	bfs.seek([]T{bfs.Start}, end, complete, NeverVisited)
 }
 
-func (bfs SimpleBFS[T]) seek(path []T, end T, complete PathConsumer[T]) {
+func (bfs SimpleBFS[T]) AllPathsFuncVisited(end T, complete PathConsumer[T], visited VisitedFunc[T]) {
+	bfs.seek([]T{bfs.Start}, end, complete, visited)
+}
+
+func (bfs SimpleBFS[T]) seek(path []T, end T, complete PathConsumer[T], visited VisitedFunc[T]) {
 	last := path[len(path)-1]
 	for _, neejber := range bfs.neejberFunc(last) {
 		if neejber == end {
@@ -218,6 +261,10 @@ func (bfs SimpleBFS[T]) seek(path []T, end T, complete PathConsumer[T]) {
 			continue
 		}
 
-		bfs.seek(append(path, neejber), end, complete)
+		if visited(path, neejber) {
+			continue
+		}
+
+		bfs.seek(append(path, neejber), end, complete, visited)
 	}
 }
