@@ -39,6 +39,10 @@ type Options struct {
     debug bool
 }
 
+func DefaultOptions() Options {
+    return Options{false}
+}
+
 func (opts Options) Debugf(format string, values ...any) {
     if opts.debug {
         fmt.Printf(format, values...)
