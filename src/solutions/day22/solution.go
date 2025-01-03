@@ -5,6 +5,7 @@ import (
 
 	"github.com/wthys/advent-of-code-2024/solver"
 	"github.com/wthys/advent-of-code-2024/util"
+	"github.com/wthys/advent-of-code-2024/collections/list"
 )
 
 type solution struct{}
@@ -34,7 +35,45 @@ func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 }
 
 func (s solution) Part2(input []string, opts solver.Options) (string, error) {
-	return solver.NotImplemented()
+	initials, err := parseInput(input)
+	if err != nil {
+		return solver.Error(err)
+	}
+
+	seen := map[string]int{}
+	for _, initial := range initials {
+		last := initial
+		sequence := list.NewFor(0)
+		thisSeen := map[string]int{}
+		for n := 0; n < 2000; n++ {
+			next := NextSecret(last)
+			diff := (next % 10) - (last % 10)
+			sequence.Append(diff)
+			for sequence.Len() > 4 {
+				sequence.PopFront()
+			}
+			if sequence.Len() == 4 {
+				s := sequence.String()
+				_, ok := thisSeen[s]
+				if !ok {
+					opts.Debugf("__ adding %v => %v\n", s, next % 10)
+					thisSeen[s] = next % 10
+				}
+			}
+			last = next
+		}
+		for seq, bananas := range thisSeen {
+			seen[seq] += bananas
+		}
+	}
+
+	most := 0
+	for _, bananas := range seen {
+		if most < bananas {
+			most = bananas
+		}
+	}
+	return solver.Solved(most)
 }
 
 func parseInput(input []string) ([]int, error) {
