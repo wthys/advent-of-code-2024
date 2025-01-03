@@ -40,24 +40,15 @@ func (s solution) Part1(input []string, opts solver.Options) (string, error) {
 
 	pathLengths := map[int]int{}
 
-	for idx, step := range baselinePath[:baseline-1] {
-		for _, cheat := range CheatNeejbers(step, locations) {
-			bestLength := idx
-			for i, s := range baselinePath {
-				if s.Pos == cheat.Pos {
-					if i > bestLength {
-						bestLength = i
-					}
-				}
+	for idx, step := range baselinePath[:baseline] {
+		opts.Debugf("__ checking step %v : %v (%v%%)\n", idx, step, 100 * idx / (baseline + 1))
+		for cidx := baseline; cidx > idx; cidx-- {
+			cheat := baselinePath[cidx]
+			dist := cheat.Pos.Subtract(step.Pos).Manhattan()
+			if dist <= 2 {
+				length := idx + baseline - cidx - 1 + dist
+				pathLengths[length] += 1
 			}
-			if bestLength == idx {
-				continue
-			}
-
-			cpath := append([]Step{}, baselinePath[:idx+1]...)
-			cpath = append(cpath, baselinePath[bestLength:]...)
-			length := pathLength(cpath)
-			pathLengths[length] += 1
 		}
 	}
 
@@ -96,10 +87,9 @@ func (s solution) Part2(input []string, opts solver.Options) (string, error) {
 		opts.Debugf("__ checking step %v : %v (%v%%)\n", idx, step, 100 * idx / (baseline + 1))
 		for cidx := baseline; cidx > idx; cidx-- {
 			cheat := baselinePath[cidx]
-			if cheat.Pos.Subtract(step.Pos).Manhattan() <= 20 {
-				cpath := append([]Step{}, baselinePath[:idx+1]...)
-				cpath = append(cpath, baselinePath[cidx:]...)
-				length := pathLength(cpath)
+			dist := cheat.Pos.Subtract(step.Pos).Manhattan()
+			if dist <= 20 {
+				length := idx + baseline - cidx - 1 + dist
 				pathLengths[length] += 1
 			}
 		}
@@ -134,30 +124,6 @@ func (s Step) String() string {
 
 func (s Step) Move(dir L.Location) Step {
 	return Step{s.Pos.Add(dir)}
-}
-
-var cheatNeejbers []L.Location = []L.Location{
-	L.New( 2,  0),
-	L.New( 1,  1),
-	L.New( 0,  2),
-	L.New(-1,  1),
-	L.New(-2,  0),
-	L.New(-1, -1),
-	L.New( 0, -2),
-	L.New( 1, -1),
-}
-
-func CheatNeejbers(step Step, validPositions *S.Set[L.Location]) []Step {
-	neejbers := []Step{}
-
-	for _, dir := range cheatNeejbers {
-		neejber := step.Move(dir)
-		if validPositions.Has(neejber.Pos) {
-			neejbers = append(neejbers, neejber)
-		}
-	}
-
-	return neejbers
 }
 
 func Neejbers(step Step, validPositions *S.Set[L.Location]) []Step {
