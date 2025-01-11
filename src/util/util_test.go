@@ -218,7 +218,7 @@ type testComb struct {
 	expected [][]int
 }
 
-func combCase(vals []int, k int, expected[][]int) testComb {
+func combCase(vals []int, k int, expected [][]int) testComb {
 	return testComb{
 		vals,
 		k,
@@ -235,21 +235,52 @@ func TestCombinationDo(t * testing.T) {
 	}
 
 	for _, cs := range cases {
-		seen := map[int]int{}
-		for _, val := range cs.expected {
-			seen[hash(val)] = 0
-		}
-
-		CombinationDo(cs.vals, cs.k, func (cand []int) {
-			seen[hash(cand)] += 1
-		})
-
-		for _, vals := range cs.expected {
-			n, _ := seen[hash(vals)]
-			if n != 1 {
-				t.Fatalf("%v was seen %v times, expected 1", vals, n)
+		t.Run(fmt.Sprintf("CombinationDo(%v, %v)", cs.vals, cs.k), func(tt *testing.T) {
+			seen := map[int]int{}
+			for _, val := range cs.expected {
+				seen[hash(val)] = 0
 			}
-		}
+
+			CombinationDo(cs.vals, cs.k, func (cand []int) {
+				seen[hash(cand)] += 1
+			})
+
+			for _, vals := range cs.expected {
+				n, _ := seen[hash(vals)]
+				if n != 1 {
+					tt.Errorf("%v was seen %v times, expected 1", vals, n)
+				}
+			}
+		})
+	}
+}
+
+func TestCombinationNoRepeatDo(t *testing.T) {
+	cases := []testComb{
+		combCase([]int{1,2}, 1, [][]int{{1}, {2}}),
+		combCase([]int{1,2}, 2, [][]int{{1,2}}),
+		combCase([]int{1,2,3}, 2, [][]int{{1,2}, {1,3}, {2,3}}),
+		combCase([]int{1,2,3,4}, 2, [][]int{{1,2}, {1,3}, {1,4}, {2,3}, {2,4}, {3,4}}),
+	}
+
+	for _, cs := range cases {
+		t.Run(fmt.Sprintf("CombinationNoRepeatDo(%v, %v)", cs.vals, cs.k), func(tt *testing.T) {
+			seen := map[int]int{}
+			for _, val := range cs.expected {
+				seen[hash(val)] = 0
+			}
+
+			CombinationNoRepeatDo(cs.vals, cs.k, func(cand []int) {
+				seen[hash(cand)] += 1
+			})
+
+			for _, vals := range cs.expected {
+				n, _ := seen[hash(vals)]
+				if n != 1 {
+					tt.Errorf("%v was seen %v times, expected 1", vals, n)
+				}
+			}
+		})
 	}
 }
 
